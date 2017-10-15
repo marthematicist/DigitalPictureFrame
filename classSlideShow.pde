@@ -67,7 +67,7 @@ class SlideShow {
         }
         
         pic.resize( floor(1.2*imageWidth) , floor(1.2*imageHeight) );
-        pic.save( f.getAbsolutePath() );
+        //pic.save( f.getAbsolutePath() );
         f = new File( f.getAbsolutePath() );
         println( "New size: " + f.length() ) ;
         println( "_______" );
