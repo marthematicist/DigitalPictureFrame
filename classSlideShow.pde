@@ -7,17 +7,19 @@ class SlideShow {
   PImage nextImage;
   PGraphics buffer;
   int imageDuration;
-  float fadeAmt;
+  int fadeDuration;
   int lastImageStartTime;
+  int maxFileSize = 500000;
+  
   
   
   SlideShow( String path , int imageDurationIn ) {
     buffer = createGraphics( width , height );
     imageDuration = imageDurationIn;
-    fadeAmt = 0.5;
+    fadeDuration =  round(imageDuration*0.5);
     ArrayList<File> allFiles = listFilesRecursive(path);
     ArrayList<File> imageList = new ArrayList<File>();
-    String[] imageExtensions = { "jpg" , "png" , "gif" , "tga" } ;
+    String[] imageExtensions = { "jpg" , "png" , "gif" , "tga" , "JPG" , "PNG" , "GIF" , "TGA" } ;
     for( File f : allFiles ) {
       String fileName = f.getName();
       int ind = fileName.lastIndexOf(".");
@@ -32,6 +34,7 @@ class SlideShow {
         }
       }
     }
+    
     num = imageList.size();
     fileOrder = new IntList(num);
     imageFiles = new File[num];
@@ -41,23 +44,51 @@ class SlideShow {
     }
     shuffleOrder();
     counter = 0;
+    
+    
+    for( File f : imageFiles ) {
+      if( f.length() > maxFileSize ) {
+        println( "resizing file. Current size: " + f.length() );
+        PImage pic = loadImage( f.getAbsolutePath() );
+        float imageAspectRatio = float(pic.width) / float(pic.height);
+        float frameAspectRatio = float(width) / float(height);
+        int imageWidth = pic.width;
+        int imageHeight = pic.height;
+        if( imageAspectRatio > frameAspectRatio ) {
+          // image is wider: set image height to frame height and
+          // scale width by image aspect ratio
+          imageHeight = height;
+          imageWidth = round( imageHeight*imageAspectRatio );
+        } else { 
+          // image is taller: set image width to frame width and
+          // scale height by image aspect ratio
+          imageWidth = width;
+          imageHeight = round( imageWidth/imageAspectRatio );
+        }
+        
+        pic.resize( floor(1.2*imageWidth) , floor(1.2*imageHeight) );
+        pic.save( f.getAbsolutePath() );
+        f = new File( f.getAbsolutePath() );
+        println( "New size: " + f.length() ) ;
+        println( "_______" );
+      }
+    }
     loadImages();
   }
   
   void draw() {
-    int t = millis();
-    int fadeStart = floor( lastImageStartTime + imageDuration*fadeAmt );
+    int t = millis();    
     if( t > lastImageStartTime + imageDuration ) {
       nextImage();
     }
+    int fadeStart = lastImageStartTime + fadeDuration;   
     buffer.beginDraw();
     buffer.tint(255,255);
     buffer.image( currentImage , 0 , 0 );
     if( t > fadeStart ) {
-      int alpha = round( 255 * ( float( t - fadeStart ) / (imageDuration*fadeAmt) ) );
+      int alpha = round( 255 * ( float( t - fadeStart ) / float(imageDuration-fadeDuration) ) );
       buffer.tint( 255 , alpha );
       buffer.image( nextImage , 0 , 0 );
-      println(alpha);
     }
     
     buffer.endDraw();
