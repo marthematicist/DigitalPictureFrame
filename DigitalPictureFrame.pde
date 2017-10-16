@@ -10,7 +10,7 @@ void setup() {
   //size( 1022,768   );
   try {
     W = new WeatherCanvas(width, height);
-    Photos = new SlideShow( "F:\\" , 4000 );
+    Photos = new SlideShow( "/media/" , 4000 );
   } catch( Exception e) {
     println( e.getMessage() );
     exit();

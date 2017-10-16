@@ -10,7 +10,7 @@ class WeatherCanvas {
                              "21st","22nd","23rd","24th","25th","26th","27th","28th","29th","30th","31st" };
                              
   String[] AMPMStrings = {"am" , "pm"};
-  color bgColor = color( 0,100 );
+  color bgColor = color( 0,128 );
   color drawColor = color( 255 );
   color drawColorShadow = color( 0 );
   int shadowAlpha = 32;
@@ -31,7 +31,7 @@ class WeatherCanvas {
   TimeDisplay timeDisplay;
   int CURRENT = -1;
   float cornerRadius;
-  boolean drawBG = true;
+  boolean drawBG = false;
 
   WeatherCanvas( int w, int h ) {
     shadowAmount = w*0.004;
