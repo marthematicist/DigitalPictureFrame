@@ -162,4 +162,46 @@ class SlideShow {
     return fileList;
   }
   
+  class NextImage implements Runnable {
+    String imagePath;
+    boolean done;
+    PGraphics img;
+    int w;
+    int h;
+    
+    NextImage( String path , int wIn , int hIn ) {
+      this.imagePath = path;
+      this.w = wIn;
+      this.h = hIn;
+      this.done = true;
+      img = createGraphics(w,h);
+    }
+    
+    void run() {
+      done = false;
+      PImage raw = loadImage( imagePath );
+      img.beginDraw();
+      img.background(0);
+      float ar0 = float(w)/float(h);
+      float ar1 = float(raw.width)/float(raw.height);
+      float h1=0;
+      float w1=0;
+      if( raw.width<raw.height ) {
+        h1 = h;
+        w1 = h1*ar1;
+        
+      } else {
+        if( ar0 > ar1 ) {
+          w1 = w;
+          h1 = w1/ar1;
+        } else {
+          h1 = h;
+          w1 = h1*ar1;
+        }
+      }
+      img.image(  raw , 0.5*w - 0.5*w1 , 0.5*h - 0.5*h1 , w1 , h1 );
+      done = true;
+    }
+  }
+  
 }
