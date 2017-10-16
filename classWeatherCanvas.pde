@@ -1,3 +1,5 @@
+import java.util.Calendar;
+
 class WeatherCanvas {
   String[] DayOfWeekStringsLong = {"null","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"};
   String[] DayOfWeekStringsShort = {"null","Su","Mo","Tu","We","Th","Fr","Sa"};
@@ -8,11 +10,11 @@ class WeatherCanvas {
                              "21st","22nd","23rd","24th","25th","26th","27th","28th","29th","30th","31st" };
                              
   String[] AMPMStrings = {"am" , "pm"};
-  color bgColor = color( 200,200,255 );
+  color bgColor = color( 0,100 );
   color drawColor = color( 255 );
   color drawColorShadow = color( 0 );
-  int shadowAlpha = 16;
-  float shadowAmount = 2;
+  int shadowAlpha = 32;
+  float shadowAmount = 5;
   int textShadowDetail = 16;
   PGraphics buf;
   WeatherData weather;
@@ -28,14 +30,17 @@ class WeatherCanvas {
   DateDisplay dateDisplay;
   TimeDisplay timeDisplay;
   int CURRENT = -1;
+  float cornerRadius;
+  boolean drawBG = true;
 
   WeatherCanvas( int w, int h ) {
-    shadowAmount = w*0.002;
+    shadowAmount = w*0.004;
     buf = createGraphics( w, h );
     OpenSansLight = createFont( "OpenSans-Light.ttf", 1,true);
     OpenSansRegular = createFont( "OpenSans-Regular.ttf", 1,true);
-    weather = new WeatherData( "weatherSettings.txt" );
+    weather = new WeatherData( "../weatherSettings.txt" );
     weather.FetchWeather();
+    cornerRadius = 0.02*w;
     float dw = w / (numDayForecasts+1.0);
     float dh = 0.25*h;
     float cw = dw;
@@ -50,11 +55,11 @@ class WeatherCanvas {
     for ( int i = 0; i < numDayForecasts; i++ ) {
       float x0 = (i+0.5)*dw;
       float y0 = 0.75*h-0.25*dw;
-      dayForecast[i] = new BasicDayForecast( x0, y0, round(dw), round(dh), i );
+      dayForecast[i] = new BasicDayForecast( x0, y0, round(0.9*dw), round(dh), i );
     }
-    currentConditionsDisplay = new CurrentConditionsDisplay( 0.5*dw, 0.25*dw, round(2*dw), round(dw) );
+    currentConditionsDisplay = new CurrentConditionsDisplay( 0.5*dw, 0.25*dw, round(2.25*dw), round(dw) );
     dateDisplay = new DateDisplay( 3.5*dw, 0.25*dw, round(3*dw), round(0.25*dw) );
-    timeDisplay = new TimeDisplay( 3.5*dw, 0.6*dw, round(3*dw), round(0.75*dw) );
+    timeDisplay = new TimeDisplay( 3.5*dw, 0.50*dw, round(3*dw), round(0.75*dw) );
     drawCanvas();
   }
 
@@ -83,8 +88,14 @@ class WeatherCanvas {
   }
 
   void drawCanvas() {
+    float dw = buf.width / (numDayForecasts+1.0);
     buf.beginDraw();
     buf.clear();
+    if( drawBG ) {
+          buf.noStroke();
+          buf.fill( bgColor );
+          buf.rect(3.5*dw, 0.25*dw, round(3*dw) , round(dw),cornerRadius,cornerRadius,cornerRadius,cornerRadius);
+        }
     for ( int i = 0; i<numDayForecasts; i++ ) {
       buf.image( dayForecast[i].can, round(dayForecast[i].x), round(dayForecast[i].y) );
     }
@@ -107,6 +118,7 @@ class WeatherCanvas {
     int h;
     PGraphics can;
     String timeString = " ";
+    String ampmString = " ";
     TimeDisplay ( float xIn, float yIn, int wIn, int hIn ) {
       this.x = xIn;
       this.y = yIn;
@@ -117,15 +129,27 @@ class WeatherCanvas {
     }
     void update() {
       Calendar date = Calendar.getInstance();
-      String newTimeString = date.get(Calendar.HOUR) + ":" + nf(date.get(Calendar.MINUTE),2) + AMPMStrings[date.get(Calendar.AM_PM)];
+      String newTimeString = date.get(Calendar.HOUR) + ":" + nf(date.get(Calendar.MINUTE),2);
+      String newAmpmString = AMPMStrings[date.get(Calendar.AM_PM)];
       if ( !timeString.equals(newTimeString ) ) {
         timeString = newTimeString;
+        ampmString = newAmpmString;
         can.beginDraw();
         can.clear();
+        if( false ) {
+          can.noStroke();
+          can.fill( bgColor );
+          can.rect(0,0,w,h,0,0,cornerRadius,cornerRadius);
+        }
         can.textFont( OpenSansLight );
         can.textSize( 0.9*h );
         float tw = can.textWidth( timeString );
-        textWithShadow( can, timeString, 0.5*w-0.5*tw, h*0.7, drawColor, drawColorShadow, shadowAmount, textShadowDetail );
+        can.textSize( 0.45*h );
+        float aw = can.textWidth( ampmString );
+        can.textSize( 0.9*h );
+        textWithShadow( can, timeString, 0.5*w-0.5*(tw+aw), h*0.8, drawColor, drawColorShadow, shadowAmount, textShadowDetail );
+        can.textSize( 0.45*h );
+        textWithShadow( can, ampmString, 0.5*w-0.5*(tw+aw)+tw, h*0.8, drawColor, drawColorShadow, shadowAmount, textShadowDetail );
         can.endDraw();
         logout( "rendered new time" );
       }
@@ -154,10 +178,15 @@ class WeatherCanvas {
         dateString = newDateString;
         can.beginDraw();
         can.clear();
+        if( false ) {
+          can.noStroke();
+          can.fill( bgColor );
+          can.rect(0,0,w,h,cornerRadius,cornerRadius,0,0);
+        }
         can.textFont( OpenSansRegular );
         can.textSize( 0.9*h );
         float tw = can.textWidth( dateString );
-        textWithShadow( can, dateString, 0.5*w-0.5*tw, h*0.7, drawColor, drawColorShadow, shadowAmount, textShadowDetail );
+        textWithShadow( can, dateString, 0.5*w-0.5*tw, h*0.8, drawColor, drawColorShadow, shadowAmount, textShadowDetail );
         can.endDraw();
         logout( "rendered new date" );
       }
@@ -178,8 +207,8 @@ class WeatherCanvas {
       this.y = yIn;
       this.w = wIn;
       this.h = hIn;
-      this.td = new TempDisplay( 0.5*w, 0.5*h - scale*0.5*h, round(0.5*w), round(scale*0.5*h), -1 );
-      this.wd = new WindDisplay( 0.5*w, 0.5*h - 0, round(0.5*w), round(scale*0.5*h), -1 );
+      this.td = new TempDisplay( h, 0.5*h - scale*0.5*h, round(w-h), round(scale*0.5*h), -1 );
+      this.wd = new WindDisplay( h, 0.5*h - 0, round(0.5*w), round(scale*0.5*h), -1 );
       this.can = createGraphics(w, h);
       update();
     }
@@ -189,6 +218,11 @@ class WeatherCanvas {
       if ( b1 || b2 ) {
         can.beginDraw();
         can.clear();
+        if( drawBG ) {
+          can.noStroke();
+          can.fill( bgColor );
+          can.rect(0,0,w,h,cornerRadius,cornerRadius,cornerRadius,cornerRadius);
+        }
         can.image( iconsLarge.get(weather.current.icon), 0, 0 );
         can.image( td.can, round(td.x) , round(td.y) );
         can.image( wd.can, round(wd.x) , round(wd.y) );
@@ -393,6 +427,11 @@ class WeatherCanvas {
 
       can.beginDraw();
       can.clear();
+      if( drawBG ) {
+        can.noStroke();
+        can.fill( bgColor );
+        can.rect(0,0,w,h,cornerRadius,cornerRadius,cornerRadius,cornerRadius);
+      }
       can.image( iconsSmall.get(icon), round(0.5*w - 0.5*iconsSmall.w), round(0.525*h - 0.5*iconsSmall.h) );
       can.fill(0);
       float dh = u*0.6;
