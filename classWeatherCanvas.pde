@@ -31,7 +31,8 @@ class WeatherCanvas {
   TimeDisplay timeDisplay;
   int CURRENT = -1;
   float cornerRadius;
-  boolean drawBG = false;
+  boolean drawBG = true;
+  int secondsBetweenWeatherUpdates = 10*60;
 
   WeatherCanvas( int w, int h ) {
     shadowAmount = w*0.004;
@@ -48,7 +49,7 @@ class WeatherCanvas {
     iconsSmall = new Icons( round(dh*0.5), round(dh*0.5), drawColor, drawColorShadow, shadowAmount );
     iconsLarge = new Icons( round(ch), round(ch), drawColor, drawColorShadow, shadowAmount );
     nextWeatherUpdateTime = Calendar.getInstance();
-    nextWeatherUpdateTime.add( Calendar.SECOND, 5*60 );
+    nextWeatherUpdateTime.add( Calendar.SECOND, secondsBetweenWeatherUpdates );
     nextTimeUpdateTime = nextMinute();
 
     dayForecast = new BasicDayForecast[numDayForecasts];
@@ -68,7 +69,7 @@ class WeatherCanvas {
     Calendar currentTime = Calendar.getInstance();
     if ( currentTime.after( nextWeatherUpdateTime ) ) {
       nextWeatherUpdateTime = Calendar.getInstance();
-      nextWeatherUpdateTime.add( Calendar.SECOND, 5*60 );
+      nextWeatherUpdateTime.add( Calendar.SECOND, secondsBetweenWeatherUpdates );
       weather.FetchWeather();
       for ( int i = 0; i<numDayForecasts; i++ ) {
         dayForecast[i].update();
@@ -731,7 +732,7 @@ class WeatherCanvas {
         PGraphics fore = loadIconColor( path , w , h , drColor  );
         this.img[i].beginDraw();
         this.img[i].tint(255,shadowAlpha);
-        for( int j = 0 ; j < 32 ; j++ ) {
+        for( int j = 0 ; j < 16 ; j++ ) {
           float ang = float(j)/float(32)*TWO_PI;
           this.img[i].image( shadow , shadowAmt*cos(ang) , shadowAmt*sin(ang) );
         }
