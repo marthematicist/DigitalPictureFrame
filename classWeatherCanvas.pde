@@ -276,7 +276,7 @@ class WeatherCanvas {
         compassBuf.clear();
         compassBuf.pushMatrix();
         compassBuf.translate( 0.5*compassSize, 0.5*compassSize );
-        compassBuf.rotate(newWindDir-0.5*PI);
+        compassBuf.rotate(newWindDir-1.5*PI);
         compassBuf.image(compassIcon.get(), round(0.5*(0-compassAmt)*compassSize), round(0.5*(0-compassAmt)*compassSize));
         compassBuf.popMatrix();
         compassBuf.stroke(255, 0, 0);
