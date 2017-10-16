@@ -2,6 +2,8 @@ class SlideShow {
   int num;              // number of images
   File[] imageFiles;    // array of image File objects
   IntList fileOrder;    // order in which files will be displayed
+  LoadImage LI;
+  Thread LIthread;
   int counter;
   PImage currentImage;
   PImage nextImage;
@@ -10,7 +12,8 @@ class SlideShow {
   int fadeDuration;
   int lastImageStartTime;
   int maxFileSize = 500000;
-  
+  int state = 0;            // 0 = loading ; 1 = waiting ; 2 = transitioning
+  int stateEndTime;
   
   
   SlideShow( String path , int imageDurationIn ) {
@@ -45,7 +48,7 @@ class SlideShow {
     shuffleOrder();
     counter = 0;
     
-    
+    /*
     for( File f : imageFiles ) {
       if( f.length() > maxFileSize ) {
         println( "resizing file. Current size: " + f.length() );
@@ -73,24 +76,80 @@ class SlideShow {
         println( "_______" );
       }
     }
-    loadImages();
+    */
+    String nextImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
+    LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
+    LIthread = new Thread( LI );
+    LIthread.start();
+    try {
+      LIthread.join();
+    } catch ( InterruptedException e) {
+      return;
+    }
+    currentImage = LI.img;
+    nextImagePath = imageFiles[fileOrder.get((counter+1)%num)].getAbsolutePath();
+    LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
+    LIthread = new Thread( LI );
+    LIthread.start();
+    //loadImages();
   }
   
   void draw() {
-    int t = millis();    
+    int t = millis();
+    
+    buffer.beginDraw();
+    
+    if( state == 0 ) {
+      buffer.tint(255,255);
+      buffer.image( currentImage , 0 , 0 );
+      if( LI.done ) {
+        nextImage = LI.img;
+        counter++;
+        counter%=num;
+        String nextImagePath = imageFiles[fileOrder.get((counter+1)%num)].getAbsolutePath();
+        LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
+        LIthread = new Thread( LI );
+        LIthread.start();
+        state = 1;
+        stateEndTime = t + imageDuration;
+      }
+    }
+    if( state == 1 ) {
+      buffer.tint(255,255);
+      buffer.image( currentImage , 0 , 0 );
+      if( t > stateEndTime ) {
+        state = 2;
+        stateEndTime = t + fadeDuration;
+      }
+    }
+    if( state == 2 ) {
+      buffer.tint(255,255);
+      buffer.image( currentImage , 0 , 0 );
+      float amt = float(stateEndTime - t) / float(fadeDuration) *255.0;
+      constrain(amt,0,255);
+      buffer.tint(255,255-amt);
+      buffer.image( nextImage , 0 , 0 );
+      if( t > stateEndTime ) {
+        state = 0;
+        currentImage = nextImage;
+      }
+    }
+    
+    /*
+    
     if( t > lastImageStartTime + imageDuration ) {
       nextImage();
     }
     int fadeStart = lastImageStartTime + fadeDuration;   
-    buffer.beginDraw();
+    
     buffer.tint(255,255);
     buffer.image( currentImage , 0 , 0 );
     if( t > fadeStart ) {
       int alpha = round( 255 * ( float( t - fadeStart ) / float(imageDuration-fadeDuration) ) );
       buffer.tint( 255 , alpha );
-      buffer.image( nextImage , 0 , 0 );
+      //buffer.image( nextImage , 0 , 0 );
     }
-    
+    */
     buffer.endDraw();
     
   }
@@ -162,14 +221,14 @@ class SlideShow {
     return fileList;
   }
   
-  class NextImage implements Runnable {
+  class LoadImage implements Runnable {
     String imagePath;
     boolean done;
     PGraphics img;
     int w;
     int h;
     
-    NextImage( String path , int wIn , int hIn ) {
+    LoadImage( String path , int wIn , int hIn ) {
       this.imagePath = path;
       this.w = wIn;
       this.h = hIn;
@@ -200,6 +259,7 @@ class SlideShow {
         }
       }
       img.image(  raw , 0.5*w - 0.5*w1 , 0.5*h - 0.5*h1 , w1 , h1 );
+      img.endDraw();
       done = true;
     }
   }

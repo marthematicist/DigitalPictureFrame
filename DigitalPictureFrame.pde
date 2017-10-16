@@ -3,7 +3,7 @@ import java.util.Calendar;
 WeatherCanvas W;
 
 void setup() {
-  size( 800 , 480 );
+  size( 1280,720   );
   W = new WeatherCanvas(width, height);
   Photos = new SlideShow( "F:\\" , 4000 );
   
