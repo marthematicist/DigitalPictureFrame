@@ -130,7 +130,9 @@ class WeatherCanvas {
     }
     void update() {
       Calendar date = Calendar.getInstance();
-      String newTimeString = date.get(Calendar.HOUR) + ":" + nf(date.get(Calendar.MINUTE),2);
+      int h = date.get(Calendar.HOUR);
+      if( h == 0 ) { h = 12; }
+      String newTimeString = nf(h) + ":" + nf(date.get(Calendar.MINUTE),2);
       String newAmpmString = AMPMStrings[date.get(Calendar.AM_PM)];
       if ( !timeString.equals(newTimeString ) ) {
         timeString = newTimeString;
