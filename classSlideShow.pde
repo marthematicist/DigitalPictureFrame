@@ -8,18 +8,18 @@ class SlideShow {
   PImage currentImage;
   PImage nextImage;
   PGraphics buffer;
-  int imageDuration;
-  int fadeDuration;
+  int imageDuration = 1000;
+  int fadeDuration = 0;
   int lastImageStartTime;
   int maxFileSize = 500000;
   int state = 0;            // 0 = loading ; 1 = waiting ; 2 = transitioning
   int stateEndTime;
   
   
-  SlideShow( String path , int imageDurationIn ) {
+  SlideShow( String path ) {
     buffer = createGraphics( width , height );
-    imageDuration = imageDurationIn;
-    fadeDuration =  round(imageDuration*0.5);
+    //imageDuration = imageDurationIn;
+    //fadeDuration =  fadeDurationIn;
     ArrayList<File> allFiles = listFilesRecursive(path);
     ArrayList<File> imageList = new ArrayList<File>();
     String[] imageExtensions = { "jpg" , "png" , "gif" , "tga" , "JPG" , "PNG" , "GIF" , "TGA" } ;
@@ -45,7 +45,7 @@ class SlideShow {
       imageFiles[i] = imageList.get(i);
       fileOrder.set( i , i );
     }
-    shuffleOrder();
+    //shuffleOrder();
     counter = 0;
     
     /*
@@ -251,11 +251,12 @@ class SlideShow {
         
       } else {
         if( ar0 > ar1 ) {
+          h1 = h*1.1;
+          w1 = h1*ar1*1.1;
+        } else {
+          
           w1 = w;
           h1 = w1/ar1;
-        } else {
-          h1 = h;
-          w1 = h1*ar1;
         }
       }
       img.image(  raw , 0.5*w - 0.5*w1 , 0.5*h - 0.5*h1 , w1 , h1 );

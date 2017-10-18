@@ -10,7 +10,7 @@ class WeatherCanvas {
                              "21st","22nd","23rd","24th","25th","26th","27th","28th","29th","30th","31st" };
                              
   String[] AMPMStrings = {"am" , "pm"};
-  color bgColor = color( 0,128 );
+  color bgColor = color( 0,64 );
   color drawColor = color( 255 );
   color drawColorShadow = color( 0 );
   int shadowAlpha = 32;
@@ -31,11 +31,11 @@ class WeatherCanvas {
   TimeDisplay timeDisplay;
   int CURRENT = -1;
   float cornerRadius;
-  boolean drawBG = true;
+  boolean drawBG = false;
   int secondsBetweenWeatherUpdates = 10*60;
 
   WeatherCanvas( int w, int h ) {
-    shadowAmount = w*0.004;
+    shadowAmount = w*0.003;
     buf = createGraphics( w, h );
     OpenSansLight = createFont( "OpenSans-Light.ttf", 1,true);
     OpenSansRegular = createFont( "OpenSans-Regular.ttf", 1,true);
@@ -735,7 +735,7 @@ class WeatherCanvas {
         this.img[i].beginDraw();
         this.img[i].tint(255,shadowAlpha);
         for( int j = 0 ; j < 16 ; j++ ) {
-          float ang = float(j)/float(32)*TWO_PI;
+          float ang = float(j)/float(16)*TWO_PI;
           this.img[i].image( shadow , shadowAmt*cos(ang) , shadowAmt*sin(ang) );
         }
         this.img[i].tint(255,255);
