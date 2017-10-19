@@ -23,7 +23,7 @@ class SlideShow {
     buffer = createGraphics( width , height );
     ArrayList<File> allFiles = listFilesRecursive(path);
     ArrayList<File> imageList = new ArrayList<File>();
-    String[] imageExtensions = { "jpg" , "png" , "gif" , "tga" , "JPG" , "PNG" , "GIF" , "TGA" } ;
+    String[] imageExtensions = { "jpg" , "png" , "gif" , "tga"  } ;
     for( File f : allFiles ) {
       String fileName = f.getName();
       int ind = fileName.lastIndexOf(".");
@@ -60,7 +60,7 @@ class SlideShow {
     }
     currentImage = LI.img;
     counter%=num;
-    nextImagePath = imageFiles[fileOrder.get((counter+2)%num)].getAbsolutePath();
+    nextImagePath = imageFiles[fileOrder.get((counter+1)%num)].getAbsolutePath();
     LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
     paintCurrentImage();
     LIthread = new Thread( LI );
@@ -89,9 +89,9 @@ class SlideShow {
       
       
       currentImage = LI.img;
-      counter+=2;
+      counter++;
       counter%=num;
-      String nextImagePath = imageFiles[fileOrder.get((counter+2)%num)].getAbsolutePath();
+      String nextImagePath = imageFiles[fileOrder.get((counter+1)%num)].getAbsolutePath();
       println( nextImagePath );
       LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
       paintCurrentImage();
@@ -99,42 +99,6 @@ class SlideShow {
       LIthread.start();
       stateEndTime = t + imageDuration;
     }
-    
-    
-    /*
-    if( state == 0 ) {
-      paintCurrentImage();
-      if( LI.done ) {
-        currentImage = LI.img;
-        
-        String nextImagePath = imageFiles[fileOrder.get((counter+1)%num)].getAbsolutePath();
-        LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
-        LIthread = new Thread( LI );
-        LIthread.start();
-        state = 1;
-        stateEndTime = t + imageDuration;
-      }
-    }
-    if( state == 1 ) {
-      paintCurrentImage();
-      if( rotateCommandFlag ) {
-        rotateCommandFlag = false;
-        rotateImage( rotateCommandAng );
-        buffer.image( currentImage , 0 , 0 );
-        stateEndTime = t + imageDuration;
-      }
-      if( t > stateEndTime || nextImageTrigger ) {
-        nextImageTrigger = false;
-        if( currentImageModified ) {
-          currentImageModified = false;
-          currentImage.save( imageFiles[fileOrder.get((counter)%num)].getAbsolutePath() );
-        }
-        state = 0;
-        counter++;
-        counter%=num;
-      }
-    }
-    */
   }
   
   void paintCurrentImage() {
@@ -298,7 +262,6 @@ class SlideShow {
       }
       img = raw;
       done = true;
-      println("loaded...");
     }
   }
     

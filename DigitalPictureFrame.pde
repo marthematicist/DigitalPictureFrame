@@ -1,6 +1,9 @@
 SlideShow Photos;
 import java.util.Calendar;
 WeatherCanvas W;
+float offsetAngle = 0;
+float offsetPix = 10;
+float offsetAngleSpeed = 0.005*TWO_PI;
 
 void settings() {
   fullScreen();
@@ -22,12 +25,13 @@ void draw() {
     Photos.draw();
     image( Photos.buffer , 0 , 0 );
     W.update();
-    image( W.buf, 0, 0 );
+    
+    offsetAngle += offsetAngleSpeed;
+    image( W.buf, offsetPix*cos(offsetAngle) , offsetPix*sin(offsetAngle) );
   } catch( Exception e ) {
     println( e.getMessage() );
     exit();
   }
-  println( -5%20 );
 }
 
 
