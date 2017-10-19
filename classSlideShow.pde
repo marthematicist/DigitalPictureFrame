@@ -8,18 +8,19 @@ class SlideShow {
   PImage currentImage;
   PImage nextImage;
   PGraphics buffer;
-  int imageDuration = 1000;
-  int fadeDuration = 0;
+  int imageDuration = 1000000;
   int lastImageStartTime;
   int maxFileSize = 500000;
   int state = 0;            // 0 = loading ; 1 = waiting ; 2 = transitioning
   int stateEndTime;
+  Boolean currentImageModified = false;
+  Boolean rotateCommandFlag = false;
+  Boolean nextImageTrigger = false;
+  float rotateCommandAng = 0;
   
   
   SlideShow( String path ) {
     buffer = createGraphics( width , height );
-    //imageDuration = imageDurationIn;
-    //fadeDuration =  fadeDurationIn;
     ArrayList<File> allFiles = listFilesRecursive(path);
     ArrayList<File> imageList = new ArrayList<File>();
     String[] imageExtensions = { "jpg" , "png" , "gif" , "tga" , "JPG" , "PNG" , "GIF" , "TGA" } ;
@@ -48,35 +49,6 @@ class SlideShow {
     //shuffleOrder();
     counter = 0;
     
-    /*
-    for( File f : imageFiles ) {
-      if( f.length() > maxFileSize ) {
-        println( "resizing file. Current size: " + f.length() );
-        PImage pic = loadImage( f.getAbsolutePath() );
-        float imageAspectRatio = float(pic.width) / float(pic.height);
-        float frameAspectRatio = float(width) / float(height);
-        int imageWidth = pic.width;
-        int imageHeight = pic.height;
-        if( imageAspectRatio > frameAspectRatio ) {
-          // image is wider: set image height to frame height and
-          // scale width by image aspect ratio
-          imageHeight = height;
-          imageWidth = round( imageHeight*imageAspectRatio );
-        } else { 
-          // image is taller: set image width to frame width and
-          // scale height by image aspect ratio
-          imageWidth = width;
-          imageHeight = round( imageWidth/imageAspectRatio );
-        }
-        
-        pic.resize( floor(1.2*imageWidth) , floor(1.2*imageHeight) );
-        //pic.save( f.getAbsolutePath() );
-        f = new File( f.getAbsolutePath() );
-        println( "New size: " + f.length() ) ;
-        println( "_______" );
-      }
-    }
-    */
     String nextImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
     LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
     LIthread = new Thread( LI );
@@ -87,25 +59,55 @@ class SlideShow {
       return;
     }
     currentImage = LI.img;
-    nextImagePath = imageFiles[fileOrder.get((counter+1)%num)].getAbsolutePath();
+    counter+=2;
+    counter%=num;
+    nextImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
     LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
+    paintCurrentImage();
     LIthread = new Thread( LI );
     LIthread.start();
+    stateEndTime = millis() + imageDuration;
     //loadImages();
+    println( "starting" );
   }
   
   void draw() {
     int t = millis();
-    
-    buffer.beginDraw();
-    
-    if( state == 0 ) {
-      buffer.tint(255,255);
+    if( rotateCommandFlag ) {
+      rotateCommandFlag = false;
+      rotateImage( rotateCommandAng );
       buffer.image( currentImage , 0 , 0 );
+      stateEndTime = t + imageDuration;
+      paintCurrentImage();
+    }
+    
+    if( LI.done && ( t > stateEndTime || nextImageTrigger ) ) {
+      nextImageTrigger = false;
+      if( currentImageModified ) {
+        currentImageModified = false;
+        currentImage.save( imageFiles[fileOrder.get((counter)%num)].getAbsolutePath() );
+      }
+      
+      
+      currentImage = LI.img;
+      counter+=2;
+      counter%=num;
+      String nextImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
+      println( nextImagePath );
+      LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
+      paintCurrentImage();
+      LIthread = new Thread( LI );
+      LIthread.start();
+      stateEndTime = t + imageDuration;
+    }
+    
+    
+    /*
+    if( state == 0 ) {
+      paintCurrentImage();
       if( LI.done ) {
-        nextImage = LI.img;
-        counter++;
-        counter%=num;
+        currentImage = LI.img;
+        
         String nextImagePath = imageFiles[fileOrder.get((counter+1)%num)].getAbsolutePath();
         LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
         LIthread = new Thread( LI );
@@ -115,68 +117,96 @@ class SlideShow {
       }
     }
     if( state == 1 ) {
-      buffer.tint(255,255);
-      buffer.image( currentImage , 0 , 0 );
-      if( t > stateEndTime ) {
-        state = 2;
-        stateEndTime = t + fadeDuration;
+      paintCurrentImage();
+      if( rotateCommandFlag ) {
+        rotateCommandFlag = false;
+        rotateImage( rotateCommandAng );
+        buffer.image( currentImage , 0 , 0 );
+        stateEndTime = t + imageDuration;
       }
-    }
-    if( state == 2 ) {
-      buffer.tint(255,255);
-      buffer.image( currentImage , 0 , 0 );
-      float amt = float(stateEndTime - t) / float(fadeDuration) *255.0;
-      constrain(amt,0,255);
-      buffer.tint(255,255-amt);
-      buffer.image( nextImage , 0 , 0 );
-      if( t > stateEndTime ) {
+      if( t > stateEndTime || nextImageTrigger ) {
+        nextImageTrigger = false;
+        if( currentImageModified ) {
+          currentImageModified = false;
+          currentImage.save( imageFiles[fileOrder.get((counter)%num)].getAbsolutePath() );
+        }
         state = 0;
-        currentImage = nextImage;
+        counter++;
+        counter%=num;
       }
-    }
-    
-    /*
-    
-    if( t > lastImageStartTime + imageDuration ) {
-      nextImage();
-    }
-    int fadeStart = lastImageStartTime + fadeDuration;   
-    
-    buffer.tint(255,255);
-    buffer.image( currentImage , 0 , 0 );
-    if( t > fadeStart ) {
-      int alpha = round( 255 * ( float( t - fadeStart ) / float(imageDuration-fadeDuration) ) );
-      buffer.tint( 255 , alpha );
-      //buffer.image( nextImage , 0 , 0 );
     }
     */
+  }
+  
+  void paintCurrentImage() {
+    buffer.beginDraw();
+    buffer.background(0);
+    int w = buffer.width;
+    int h = buffer.height;
+    float ar0 = float(w)/float(h);
+    float ar1 = float(currentImage.width)/float(currentImage.height);
+    float h1=0;
+    float w1=0;
+    if( currentImage.width<currentImage.height ) {
+      h1 = h;
+      w1 = h1*ar1;
+      
+    } else {
+      if( ar0 > ar1 ) {
+        h1 = h*1.1;
+        w1 = h1*ar1*1.1;
+      } else {
+        
+        w1 = w;
+        h1 = w1/ar1;
+      }
+    }
+    buffer.image(  currentImage , 0.5*w - 0.5*w1 , 0.5*h - 0.5*h1 , w1 , h1 );
     buffer.endDraw();
+  }
+  
+  void rotateImage( float ang ) {
+    println( ang + "hi");
+    if( ang == 180 ) {
+      PGraphics buf = createGraphics( currentImage.width , currentImage.height );
+      buf.beginDraw();
+      buf.pushMatrix();
+      buf.translate( 0.5*buf.width , 0.5*buf.height );
+      buf.rotate( ang/180*PI );
+      buf.translate( -0.5*buf.width , -0.5*buf.height );
+      buf.image( currentImage , 0 , 0 );
+      buf.popMatrix();
+      buf.endDraw();
+      currentImageModified = true;
+      currentImage = buf;
+    }
+    if( ang == 90 || ang == -90 ) {
+      println( ang );
+      PGraphics buf = createGraphics( currentImage.height , currentImage.width );
+      buf.beginDraw();
+      buf.pushMatrix();
+      buf.translate(  0.5*buf.width , 0.5*buf.height );
+      buf.rotate( ang/180*PI );
+      buf.translate( -0.5*buf.height ,  -0.5*buf.width );
+      buf.image( currentImage , 0 , 0 );
+      buf.popMatrix();
+      buf.endDraw();
+      currentImageModified = true;
+      currentImage = buf;
+    }
+  }
+  
+  void rotateImage90(float ang ) {
     
   }
   
-  void nextImage() {
-    counter++;
-    counter %= num;
-    currentImage = nextImage;
-    String nextImagePath = imageFiles[fileOrder.get((counter+1)%num)].getAbsolutePath() ; 
-    nextImage = loadImage( nextImagePath );
-    nextImage.resize( width , height );
-    lastImageStartTime = millis();
-  }
+
   
   void shuffleOrder() {
     fileOrder.shuffle();
   }
   
-  void loadImages() {
-    String currentImagePath = imageFiles[fileOrder.get(counter)].getAbsolutePath() ;
-    String nextImagePath = imageFiles[fileOrder.get((counter+1)%num)].getAbsolutePath() ; 
-    currentImage = loadImage( currentImagePath );
-    nextImage = loadImage( nextImagePath );
-    currentImage.resize( width , height );
-    nextImage.resize( width , height );
-    lastImageStartTime = millis();
-  }
+
   
   // lists all file names from a directory dir
   String[] listFileNames( String dir ) {
@@ -224,7 +254,7 @@ class SlideShow {
   class LoadImage implements Runnable {
     String imagePath;
     boolean done;
-    PGraphics img;
+    PImage img;
     int w;
     int h;
     
@@ -239,30 +269,39 @@ class SlideShow {
     void run() {
       done = false;
       PImage raw = loadImage( imagePath );
-      img.beginDraw();
-      img.background(0);
-      float ar0 = float(w)/float(h);
+      int w0 = w;
+      int h0 = h;
+      int w1 = raw.width;
+      int h1 = raw.height;
+      int maxDim0 = max( w0 , h0 );
+      int minDim1 = min( w1 , h1 );
       float ar1 = float(raw.width)/float(raw.height);
-      float h1=0;
-      float w1=0;
-      if( raw.width<raw.height ) {
-        h1 = h;
-        w1 = h1*ar1;
-        
-      } else {
-        if( ar0 > ar1 ) {
-          h1 = h*1.1;
-          w1 = h1*ar1*1.1;
+      if( minDim1 > maxDim0 ) {
+        if( w0 > h0 ) {
+          if( w1 > h1 ) {
+            raw.resize( ceil(w0) , ceil(w0/ar1) );
+            
+          } else {
+            // h1 > w1
+            raw.resize( ceil(w0/ar1) , ceil(w0) );
+          }
         } else {
-          
-          w1 = w;
-          h1 = w1/ar1;
+          // h0 > w0
+          if( w1 > h1 ) {
+            raw.resize( ceil(h0) , ceil(h0*ar1) );
+          }  else {
+            // h1 > w0
+            raw.resize( ceil(h0*ar1) , ceil(h0) );
+          }
         }
+        raw.save( imagePath );
+        println("saving image");
       }
-      img.image(  raw , 0.5*w - 0.5*w1 , 0.5*h - 0.5*h1 , w1 , h1 );
-      img.endDraw();
+      img = raw;
       done = true;
+      println("loaded...");
     }
   }
+    
   
 }

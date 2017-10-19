@@ -27,4 +27,27 @@ void draw() {
     println( e.getMessage() );
     exit();
   }
+  println( -5%20 );
+}
+
+
+
+void keyPressed() {
+  println(keyCode);
+  if( keyCode == 38 ) {
+    Photos.rotateCommandFlag = true;
+    Photos.rotateCommandAng = -90;
+  }
+  if( keyCode == 40 ) {
+    Photos.rotateCommandFlag = true;
+    Photos.rotateCommandAng = 90;
+  }
+  if( keyCode == 37 || keyCode == 39 ) {
+    Photos.rotateCommandFlag = true;
+    Photos.rotateCommandAng = 180;
+  }
+  if( keyCode == 32 ) {
+    Photos.nextImageTrigger = true;
+  }
+  
 }
