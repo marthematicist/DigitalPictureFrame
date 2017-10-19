@@ -8,7 +8,7 @@ class SlideShow {
   PImage currentImage;
   PImage nextImage;
   PGraphics buffer;
-  int imageDuration = 1000000;
+  int imageDuration = 15000;
   int lastImageStartTime;
   int maxFileSize = 500000;
   int state = 0;            // 0 = loading ; 1 = waiting ; 2 = transitioning
@@ -59,9 +59,8 @@ class SlideShow {
       return;
     }
     currentImage = LI.img;
-    counter+=2;
     counter%=num;
-    nextImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
+    nextImagePath = imageFiles[fileOrder.get((counter+2)%num)].getAbsolutePath();
     LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
     paintCurrentImage();
     LIthread = new Thread( LI );
@@ -92,7 +91,7 @@ class SlideShow {
       currentImage = LI.img;
       counter+=2;
       counter%=num;
-      String nextImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
+      String nextImagePath = imageFiles[fileOrder.get((counter+2)%num)].getAbsolutePath();
       println( nextImagePath );
       LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
       paintCurrentImage();
@@ -153,8 +152,8 @@ class SlideShow {
       
     } else {
       if( ar0 > ar1 ) {
-        h1 = h*1.1;
-        w1 = h1*ar1*1.1;
+        h1 = h*1.0;
+        w1 = h1*ar1*1.0;
       } else {
         
         w1 = w;
