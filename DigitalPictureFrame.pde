@@ -3,7 +3,7 @@ import java.util.Calendar;
 WeatherCanvas W;
 float offsetAngle = 0;
 float offsetPix = 10;
-float offsetAngleSpeed = 0.005*TWO_PI;
+float offsetAngleSpeed = 0.000001;
 
 void settings() {
   fullScreen();
@@ -25,8 +25,7 @@ void draw() {
     Photos.draw();
     image( Photos.buffer , 0 , 0 );
     W.update();
-    
-    offsetAngle += offsetAngleSpeed;
+    offsetAngle = millis()*offsetAngleSpeed;
     image( W.buf, offsetPix*cos(offsetAngle) , offsetPix*sin(offsetAngle) );
   } catch( Exception e ) {
     println( e.getMessage() );
