@@ -35,7 +35,7 @@ void setup() {
     }
     W.update( true );
     W.drawCanvas();
-    Photos = new SlideShow( "E:\\media" );
+    Photos = new SlideShow( "/media/" );
   } catch( Exception e) {
     println( e.getMessage() );
     exit();
