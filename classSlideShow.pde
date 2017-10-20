@@ -16,6 +16,7 @@ class SlideShow {
   Boolean currentImageModified = false;
   Boolean rotateCommandFlag = false;
   Boolean nextImageTrigger = false;
+  Boolean prevImageTrigger = false;
   float rotateCommandAng = 0;
   
   
@@ -49,54 +50,41 @@ class SlideShow {
     //shuffleOrder();
     counter = 0;
     
-    String nextImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
-    LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
-    LIthread = new Thread( LI );
-    LIthread.start();
-    try {
-      LIthread.join();
-    } catch ( InterruptedException e) {
-      return;
-    }
-    currentImage = LI.img;
-    counter%=num;
-    nextImagePath = imageFiles[fileOrder.get((counter+1)%num)].getAbsolutePath();
-    LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
+    String currentImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
+    currentImage = loadImage( currentImagePath );
     paintCurrentImage();
-    LIthread = new Thread( LI );
-    LIthread.start();
     stateEndTime = millis() + imageDuration;
-    //loadImages();
     println( "starting" );
   }
   
   void draw() {
     int t = millis();
+    
     if( rotateCommandFlag ) {
       rotateCommandFlag = false;
       rotateImage( rotateCommandAng );
-      buffer.image( currentImage , 0 , 0 );
       stateEndTime = t + imageDuration;
       paintCurrentImage();
     }
     
-    if( LI.done && ( t > stateEndTime || nextImageTrigger ) ) {
-      nextImageTrigger = false;
+    if( t > stateEndTime || nextImageTrigger || prevImageTrigger ) {
       if( currentImageModified ) {
         currentImageModified = false;
         currentImage.save( imageFiles[fileOrder.get((counter)%num)].getAbsolutePath() );
       }
-      
-      
-      currentImage = LI.img;
-      counter++;
-      counter%=num;
-      String nextImagePath = imageFiles[fileOrder.get((counter+1)%num)].getAbsolutePath();
-      println( nextImagePath );
-      LI = new LoadImage( nextImagePath , buffer.width , buffer.height );
+      if( prevImageTrigger ) {
+        counter--;
+        if( counter < 0 ) { counter = num -1; }
+      }
+      if( nextImageTrigger ) {
+        counter++;
+        counter%=num;
+      }
+      nextImageTrigger = false;
+      prevImageTrigger = false;
+      String currentImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
+      currentImage = loadImage( currentImagePath );
       paintCurrentImage();
-      LIthread = new Thread( LI );
-      LIthread.start();
       stateEndTime = t + imageDuration;
     }
   }
@@ -129,7 +117,6 @@ class SlideShow {
   }
   
   void rotateImage( float ang ) {
-    println( ang + "hi");
     if( ang == 180 ) {
       PGraphics buf = createGraphics( currentImage.width , currentImage.height );
       buf.beginDraw();
@@ -144,7 +131,6 @@ class SlideShow {
       currentImage = buf;
     }
     if( ang == 90 || ang == -90 ) {
-      println( ang );
       PGraphics buf = createGraphics( currentImage.height , currentImage.width );
       buf.beginDraw();
       buf.pushMatrix();
@@ -257,7 +243,7 @@ class SlideShow {
             raw.resize( ceil(h0*ar1) , ceil(h0) );
           }
         }
-        raw.save( imagePath );
+        //raw.save( imagePath );
         println("saving image");
       }
       img = raw;
