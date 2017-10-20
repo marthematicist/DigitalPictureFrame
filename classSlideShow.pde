@@ -76,7 +76,7 @@ class SlideShow {
         counter--;
         if( counter < 0 ) { counter = num -1; }
       }
-      if( nextImageTrigger ) {
+      if( nextImageTrigger || t > stateEndTime ) {
         counter++;
         counter%=num;
       }
