@@ -736,7 +736,7 @@ class WeatherCanvas {
         this.img[i].beginDraw();
         this.img[i].tint(255,shadowAlpha);
         for( int j = 0 ; j < 16 ; j++ ) {
-          float ang = float(j)/float(32)*TWO_PI;
+          float ang = float(j)/float(16)*TWO_PI;
           this.img[i].image( shadow , shadowAmt*cos(ang) , shadowAmt*sin(ang) );
         }
         this.img[i].tint(255,255);
