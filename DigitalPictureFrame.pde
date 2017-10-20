@@ -35,7 +35,7 @@ void setup() {
     }
     W.update( true );
     W.drawCanvas();
-    Photos = new SlideShow( "/media/" );
+    Photos = new SlideShow( "E:\\media" );
   } catch( Exception e) {
     println( e.getMessage() );
     exit();
@@ -223,7 +223,7 @@ void keyPressed() {
   if( key == 's' ) {
     captureScreenshot = true;
   }
-  if( keyCode == 32 ) {
+  if( keyCode == 10 ) {
     modeChangeSwitch = true;
   }
   if( keyCode == 38 ) {
