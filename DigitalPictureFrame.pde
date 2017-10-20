@@ -28,14 +28,15 @@ void setup() {
   try {
     W = new WeatherCanvas(width, height);
     if( bgMode == 0 ) {
-      W.bgColor = color( 0,64 );
+      W.drawBG = false;
     }
     if( bgMode == 1 ) {
-      W.bgColor = color( 0,128 );
+      W.drawBG = true;
+      //W.bgColor = color( 0,0,0,32 );
     }
     W.update( true );
     W.drawCanvas();
-    Photos = new SlideShow( "E:\\media" );
+    Photos = new SlideShow( "/media/" );
   } catch( Exception e) {
     println( e.getMessage() );
     exit();
@@ -56,10 +57,10 @@ void draw() {
       bgMode = 0;
     }
     if( bgMode == 0 ) {
-      W.bgColor = color( 0,64 );
+      W.drawBG = false;
     }
     if( bgMode == 1 ) {
-      W.bgColor = color( 0,128 );
+      W.drawBG = true;
     }
     W.update( true );
     W.drawCanvas();
@@ -224,6 +225,9 @@ void keyPressed() {
     captureScreenshot = true;
   }
   if( keyCode == 10 ) {
+    weatherOn = !weatherOn;
+  }
+  if( keyCode == 32 ) {
     modeChangeSwitch = true;
   }
   if( keyCode == 38 ) {
