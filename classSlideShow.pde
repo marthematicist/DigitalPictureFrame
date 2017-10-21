@@ -21,7 +21,7 @@ class SlideShow {
   Boolean zoomOutTrigger = false;
   float rotateCommandAng = 0;
   float zoomLevel = 0.8;
-  PGraphics fadeBuffer;
+  PImage fadeBuffer;
   
   
   SlideShow( String path ) {
@@ -54,6 +54,8 @@ class SlideShow {
     shuffleOrder();
     counter = 0;
     
+    fadeBuffer = loadImage( "fadeBuffer.png" );
+    /*
     fadeBuffer = createGraphics( max(buffer.width,buffer.height) , max(buffer.width,buffer.height) );
     fadeBuffer.beginDraw();
     fadeBuffer.noFill();
@@ -62,6 +64,8 @@ class SlideShow {
     fadeBuffer.rect(0.5*wf,0.5*wf,fadeBuffer.width-wf , fadeBuffer.height-wf);
     fadeBuffer.filter( BLUR , 10 );
     fadeBuffer.endDraw();
+    fadeBuffer.save("fadeBuffer.png");
+    */
     
     
     String currentImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
