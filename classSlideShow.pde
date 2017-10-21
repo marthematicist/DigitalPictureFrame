@@ -21,6 +21,7 @@ class SlideShow {
   Boolean zoomOutTrigger = false;
   float rotateCommandAng = 0;
   float zoomLevel = 0.8;
+  PGraphics fadeBuffer;
   
   
   SlideShow( String path ) {
@@ -53,11 +54,24 @@ class SlideShow {
     shuffleOrder();
     counter = 0;
     
+    fadeBuffer = createGraphics( max(buffer.width,buffer.height) , max(buffer.width,buffer.height) );
+    fadeBuffer.beginDraw();
+    fadeBuffer.noFill();
+    int wf = 20;
+    fadeBuffer.strokeWeight(wf);
+    fadeBuffer.rect(0.5*wf,0.5*wf,fadeBuffer.width-wf , fadeBuffer.height-wf);
+    fadeBuffer.filter( BLUR , 10 );
+    fadeBuffer.endDraw();
+    
+    
     String currentImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
     currentImage = loadImage( currentImagePath );
     paintCurrentImage();
     stateEndTime = millis() + imageDuration;
     println( "starting" );
+    
+    
+    
   }
   
   void draw() {
@@ -134,7 +148,7 @@ class SlideShow {
 
     float wr = w1/w;
     float hr = h1/h;
-    if( h1 > w1 ) { minR = 1-2*(1-minR); }
+    if( h1 > w1 ) { minR = 1-3*(1-minR); }
     if( wr < minR ) {
       w1 = w1*minR/wr;
       h1 = h1*minR/wr;
@@ -144,6 +158,8 @@ class SlideShow {
       h1 = h1*minR/hr;
     }
     buffer.image(  currentImage , 0.5*w - 0.5*w1 , 0.5*h - 0.5*h1 , w1 , h1 );
+    println( "debug" );
+    buffer.image(  fadeBuffer , 0.5*w - 0.5*w1 , 0.5*h - 0.5*h1 , w1 , h1 );
     buffer.endDraw();
   }
   
