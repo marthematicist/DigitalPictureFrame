@@ -8,7 +8,7 @@ class SlideShow {
   PImage currentImage;
   PImage nextImage;
   PGraphics buffer;
-  int imageDuration = 15000;
+  int imageDuration = 999999999;
   int lastImageStartTime;
   int maxFileSize = 500000;
   int state = 0;            // 0 = loading ; 1 = waiting ; 2 = transitioning
@@ -17,7 +17,10 @@ class SlideShow {
   Boolean rotateCommandFlag = false;
   Boolean nextImageTrigger = false;
   Boolean prevImageTrigger = false;
+  Boolean zoomInTrigger = false;
+  Boolean zoomOutTrigger = false;
   float rotateCommandAng = 0;
+  float zoomLevel = 0.8;
   
   
   SlideShow( String path ) {
@@ -47,7 +50,7 @@ class SlideShow {
       imageFiles[i] = imageList.get(i);
       fileOrder.set( i , i );
     }
-    //shuffleOrder();
+    shuffleOrder();
     counter = 0;
     
     String currentImagePath = imageFiles[fileOrder.get((counter)%num)].getAbsolutePath();
@@ -64,6 +67,21 @@ class SlideShow {
       rotateCommandFlag = false;
       rotateImage( rotateCommandAng );
       stateEndTime = t + imageDuration;
+      paintCurrentImage();
+    }
+    
+    if( zoomInTrigger ) {
+      zoomInTrigger = false;
+      zoomLevel = zoomLevel - 0.05;
+      zoomLevel = constrain( zoomLevel, 0.5 , 1 );
+      println("zoomLevel", zoomLevel);
+      paintCurrentImage();
+    }
+    if( zoomOutTrigger ) {
+      zoomOutTrigger = false;
+      zoomLevel = zoomLevel + 0.05;
+      zoomLevel = constrain( zoomLevel , 0.5 , 1 );
+      println("zoomLevel", zoomLevel);
       paintCurrentImage();
     }
     
@@ -111,6 +129,19 @@ class SlideShow {
         w1 = w;
         h1 = w1/ar1;
       }
+    }
+    float minR = zoomLevel;
+
+    float wr = w1/w;
+    float hr = h1/h;
+    if( h1 > w1 ) { minR = 1-2*(1-minR); }
+    if( wr < minR ) {
+      w1 = w1*minR/wr;
+      h1 = h1*minR/wr;
+    }
+    if( hr < minR ) {
+      w1 = w1*minR/hr;
+      h1 = h1*minR/hr;
     }
     buffer.image(  currentImage , 0.5*w - 0.5*w1 , 0.5*h - 0.5*h1 , w1 , h1 );
     buffer.endDraw();

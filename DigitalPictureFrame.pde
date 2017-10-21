@@ -36,7 +36,7 @@ void setup() {
     }
     W.update( true );
     W.drawCanvas();
-    Photos = new SlideShow( "/media/" );
+    Photos = new SlideShow( "\media\" );
   } catch( Exception e) {
     println( e.getMessage() );
     exit();
@@ -247,6 +247,12 @@ void keyPressed() {
   }
   if( keyCode == 34 ) {
     Photos.prevImageTrigger = true;
+  }
+  if( keyCode == 91 ) {
+    Photos.zoomInTrigger = true;
+  }
+  if( keyCode == 93 ) {
+    Photos.zoomOutTrigger = true;
   }
 }
 

@@ -35,7 +35,7 @@ class WeatherCanvas {
   int secondsBetweenWeatherUpdates = 10*60;
 
   WeatherCanvas( int w, int h ) {
-    shadowAmount = w*0.004;
+    shadowAmount = w*0.003;
     buf = createGraphics( w, h );
     OpenSansLight = createFont( "OpenSans-Light.ttf", 1,true);
     OpenSansRegular = createFont( "OpenSans-Regular.ttf", 1,true);
