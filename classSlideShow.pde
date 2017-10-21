@@ -8,7 +8,7 @@ class SlideShow {
   PImage currentImage;
   PImage nextImage;
   PGraphics buffer;
-  int imageDuration = 999999999;
+  int imageDuration = 15000;
   int lastImageStartTime;
   int maxFileSize = 500000;
   int state = 0;            // 0 = loading ; 1 = waiting ; 2 = transitioning
